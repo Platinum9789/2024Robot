@@ -9,6 +9,7 @@ import static frc.robot.Constants.DrivetrainConstants.*;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /* This class declares the subsystem for the robot drivetrain if controllers are connected via CAN. Make sure to go to
@@ -22,15 +23,15 @@ public class CANDrivetrain extends SubsystemBase {
   /*Class member variables. These variables represent things the class needs to keep track of and use between
   different method calls. */
   DifferentialDrive m_drivetrain;
-
+  CANSparkMax leftFront = new CANSparkMax(kLeftFrontID, MotorType.kBrushless);
+  CANSparkMax leftRear = new CANSparkMax(kLeftRearID, MotorType.kBrushless);
+  CANSparkMax rightFront = new CANSparkMax(kRightFrontID, MotorType.kBrushless);
+  CANSparkMax rightRear = new CANSparkMax(kRightRearID, MotorType.kBrushless);
   /*Constructor. This method is called when an instance of the class is created. This should generally be used to set up
    * member variables and perform any configuration or set up necessary on hardware.
    */
   public CANDrivetrain() {
-    CANSparkMax leftFront = new CANSparkMax(kLeftFrontID, MotorType.kBrushless);
-    CANSparkMax leftRear = new CANSparkMax(kLeftRearID, MotorType.kBrushless);
-    CANSparkMax rightFront = new CANSparkMax(kRightFrontID, MotorType.kBrushless);
-    CANSparkMax rightRear = new CANSparkMax(kRightRearID, MotorType.kBrushless);
+
 
     /*Sets current limits for the drivetrain motors. This helps reduce the likelihood of wheel spin, reduces motor heating
      *at stall (Drivetrain pushing against something) and helps maintain battery voltage under heavy demand */
@@ -58,6 +59,11 @@ public class CANDrivetrain extends SubsystemBase {
   public void tankDrive(double leftSpeed, double rightSpeed) {
   //public void arcadeDrive(double speed, double rotation) {
     m_drivetrain.tankDrive(leftSpeed, rightSpeed);
+    SmartDashboard.putNumber("Right Speed", rightSpeed);
+    SmartDashboard.putNumber("Left Speed", leftSpeed);
+
+    // leftFront.set(leftSpeed);
+    // rightFront.set(rightSpeed);
   }
 
   @Override

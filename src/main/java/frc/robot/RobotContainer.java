@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -20,6 +21,7 @@ import frc.robot.commands.PrepareLaunch;
 import frc.robot.subsystems.CANDrivetrain;
 import frc.robot.subsystems.CANLauncher;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -37,20 +39,22 @@ public class RobotContainer {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected = "AutoSelected";
-  SendableChooser<Command> m_chooser = new SendableChooser<>();
+  // SendableChooser<Command> m_chooser = new SendableChooser<>();
 
   /*The gamepad provided in the KOP shows up like an XBox controller if the mode switch is set to X mode using the
    * switch on the top.*/
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  private final CommandXboxController m_operatorController =
-      new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+  // private final CommandXboxController m_operatorController =
+  //     new CommandXboxController(OperatorConstants.kOperatorControllerPort);
 
   //private final GenericHID flightStickLeft = new GenericHID(1);
   // private final GenericHID flightStickRight = new GenericHID(2);
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    m_chooser.setDefaultOption("Default", new customAuto());
+    // m_chooser.setDefaultOption("Default", customAuto());
+    // m_chooser.addOption("Move Back", defaultAuto());
+
     //m_chooser.addOption("My Auto", kCustomAuto);
     // Configure the trigger bindings
     configureBindings();
@@ -63,14 +67,25 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Set the default command for the drivetrain to drive using the joysticks
-    m_drivetrain.setDefaultCommand(new RunCommand(() -> m_drivetrain.tankDrive(-Math.pow(m_driverController.getLeftY(), 3),
-    -Math.pow(m_driverController.getRightY(), 3)), m_drivetrain));
+    // m_drivetrain.setDefaultCommand(new RunCommand(() -> m_drivetrain.tankDrive(-Math.pow(m_driverController.getLeftY(), 3),
+    // -Math.pow(m_driverController.getRightY(), 3)), m_drivetrain));
+    //m_drivetrain.setDefaultCommand(new RunCommand(() -> m_drivetrain.tankDrive(1, 1)));
+    m_drivetrain.setDefaultCommand(
+        new RunCommand(
+            () ->
+                m_drivetrain.tankDrive(
+                    -m_driverController.getLeftY(), -m_driverController.getRightX()),
+            m_drivetrain));
+    //-Math.pow(m_driverController.getRightY(), 3)), m_drivetrain));
     //m_drivetrain.setDefaultCommand(new RunCommand(() -> m_drivetrain.tankDrive(-Math.pow(-0.5*flightStickLeft.getRawAxis(1), 3),
     //-Math.pow(-0.5*flightStickRight.getRawAxis(1), 3)), m_drivetrain));
     
     /*Create an inline sequence to run when the operator presses and holds the A (green) button. Run the PrepareLaunch
      * command for 1 seconds and then run the LaunchNote command */
-    m_operatorController
+    m_driverController.a().onTrue(new InstantCommand(() -> SmartDashboard.putBoolean(RobotContainer, true)));
+    m_driverController.a().onFalse(new InstantCommand(() -> SmartDashboard.putBoolean(RobotContainer, false)));
+
+    m_driverController
         .a()
         .whileTrue(
             new PrepareLaunch(m_launcher)
@@ -80,7 +95,7 @@ public class RobotContainer {
 
     // Set up a binding to run the intake command while the operator is pressing and holding the
     // left Bumper
-    m_operatorController.leftBumper().whileTrue(m_launcher.getIntakeCommand());
+    m_driverController.leftBumper().whileTrue(m_launcher.getIntakeCommand());
   }
 
 
@@ -89,17 +104,24 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
+  // public Command defaultAuto() {
+  //   //return new RunCommand(() -> m_drivetrain.tankDrive(0, 0), m_drivetrain);
+  //   //return new RunCommand(() -> m_drivetrain.tankDrive(-0.5, -0.5), m_drivetrain)
+  //     //   .withTimeout(1)
+  //     //   .andThen(new RunCommand(() -> m_drivetrain.tankDrive(0, 0), m_drivetrain));
+  //   return new SequentialCommandGroup(
+  //     new RunCommand(() -> m_drivetrain.tankDrive(-0.5, -0.5)).withTimeout(1));
+  // }
+  // public Command customAuto() {
+  //   //return new RunCommand(() -> m_drivetrain.tankDrive(0, 0), m_drivetrain);
+  //   return new SequentialCommandGroup(
+  //     new WaitCommand(7),
+  //     new PrepareLaunch(m_launcher));
+  // }
 
-  public Command customAuto() {
-    //return new RunCommand(() -> m_drivetrain.tankDrive(0, 0), m_drivetrain);
-    return new SequentialCommandGroup(
-      new WaitCommand(7) );
-      new PrepareLaunch(m_launcher).withTimeout(4);
-      new LaunchNote(m_launcher).withTimeout(4);
-    }
-}
   public Command getAutonomousCommand() {
-    return m_chooser.getSelected();
+    //return m_chooser.getSelected();
+    return new InstantCommand();
   
     //m_robotContainer = new RobotContainer();
     // An example command will be run in autonomous
@@ -119,4 +141,5 @@ public class RobotContainer {
       //     new LaunchNote(m_launcher).withTimeout(4);
       // }
       }
+    }
 
